@@ -4,7 +4,7 @@ CREATE TABLE users (
   name VARCHAR(50) NOT NULL,
   email VARCHAR(100) UNIQUE,
   created_at DATE DEFAULT (CURRENT_DATE),
-  -- DATE型だと日付更新ができないため実装されていません --
+  -- DATEでは、行を更新しても日付は自動で変わりません --
   updated_at DATE DEFAULT (CURRENT_DATE));
   --productsテーブル作成--
 CREATE TABLE products (  
@@ -13,19 +13,21 @@ CREATE TABLE products (
   price INT, 
   stock INT, 
   created_at DATE DEFAULT (CURRENT_DATE), 
-  -- DATE型だと日付更新ができないため実装されていません --
+  -- DATEでは、行を更新しても日付は自動で変わりません --
   updated_at DATE DEFAULT (CURRENT_DATE));
   --ordersテーブル作成--
 CREATE TABLE orders (
   id INT AUTO_INCREMENT PRIMARY KEY, 
   user_id INT,
   product_id INT,
-  products(id), quantity INT, order_date DATE DEFAULT (CURRENT_DATE), 
+  quantity INT, 
+  order_date DATE DEFAULT (CURRENT_DATE), 
   created_at DATE DEFAULT (CURRENT_DATE), 
-  -- DATE型だと日付更新ができないため実装されていません --
+  -- DATEでは、行を更新しても日付は自動で変わりません --
   updated_at DATE DEFAULT (CURRENT_DATE),
   FOREIGN KEY (user_id) REFERENCES users(id), 
-  FOREIGN KEY (product_id) REFERENCES products(id),
+  FOREIGN KEY (product_id) REFERENCES products(id)
+);
   --usersテーブルにデータ挿入--
   INSERT INTO users (name, email) VALUES 
   ('田中太郎', 'tanaka@example.com'), 
@@ -44,13 +46,13 @@ CREATE TABLE orders (
   -- 1. 全ユーザーの情報を取得する。--
   SELECT * FROM users;
   /*
-  +----+--------------+----------------------+------------+---------------------+
-| id | name         | email                | create_at  | updated_at          |
-+----+--------------+----------------------+------------+---------------------+
-|  1 | 田中太郎     | tanaka@example.com   | 2026-10-06 | 2026-10-06 17:50:23 |
-|  2 | 佐藤花子     | sato@example.com     | 2026-10-06 | 2026-10-06 17:50:23 |
-|  3 | 山本次郎     | yamamoto@example.com | 2026-10-06 | 2026-10-06 17:50:23 |
-+----+--------------+----------------------+------------+---------------------+
+  +----+--------------+----------------------+------------+------------+
+| id | name         | email                | created_at | updated_at |
++----+--------------+----------------------+------------+------------+
+|  1 | 田中太郎     | tanaka@example.com   | 2026-10-07 | 2026-10-06 |
+|  2 | 佐藤花子     | sato@example.com     | 2026-10-07 | 2026-10-06 |
+|  3 | 山本次郎     | yamamoto@example.com | 2026-10-07 | 2026-10-06 |
++----+--------------+----------------------+------------+------------+
   */
   -- 2. すべての商品とその在庫を取得する。--
   SELECT name, stock FROM products;
