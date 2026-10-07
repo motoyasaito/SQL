@@ -1,13 +1,34 @@
 -- employeesテーブル --
-CREATE TABLE employees ( id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(50), position VARCHAR(50), salary INT, created_at DATE D
-EFAULT (CURRENT_DATE), updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP);
+CREATE TABLE employees ( 
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(50), 
+  position VARCHAR(50), 
+  salary INT, 
+  created_at DATE DEFAULT (CURRENT_DATE),
+  -- DATE型だと日付更新ができないため実装されていません --
+  updated_at DATE DEFAULT (CURRENT_DATE)
+  );
 -- projectsテーブル --
-CREATE TABLE projects (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(100), budget INT, created_at DATE DEFAUL
-T (CURRENT_DATE), updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP);
+CREATE TABLE projects (
+  id INT AUTO_INCREMENT PRIMARY KEY, 
+  name VARCHAR(100), 
+  budget INT, 
+  created_at DATE DEFAULT (CURRENT_DATE),
+  -- DATE型だと日付更新ができないため実装されていません --
+  updated_at DATE DEFAULT (CURRENT_DATE)
+);
 -- assignmentsテーブル --
-CREATE TABLE assignments (id INT AUTO_INCREMENT PRIMARY KEY, employee_id INT, FOREIGN KEY (employee_id) REFEREN
-CES employees(id), project_id INT, FOREIGN KEY (project_id) REFERENCES projects(id), hours INT, created_at DATE DEFAUL
-T (CURRENT_DATE), updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP);
+CREATE TABLE assignments (
+  id INT AUTO_INCREMENT PRIMARY KEY, 
+  employee_id INT, 
+  project_id INT,  
+  hours INT, 
+  created_at DATE DEFAULT (CURRENT_DATE),
+  -- DATE型だと日付更新ができないため実装されていません --
+  updated_at DATE DEFAULT (CURRENT_DATE),
+  FOREIGN KEY (employee_id) REFERENCES employees(id),
+  FOREIGN KEY (project_id) REFERENCES projects(id)
+);
 -- employeesテーブルにデータ挿入 --
 INSERT INTO employees(name, position, salary) VALUES  ('山田太郎', 'マネージャー', 700000), ('佐藤花子', 'エン
 ジニア', '500000'), ('鈴木次郎', 'エンジニア', 500000);
