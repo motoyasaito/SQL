@@ -20,16 +20,14 @@ SELECT employee.name, department_name FROM employee JOIN department ON employee.
 +--------+-----------------+
 */
 -- employeeテーブルのすべての社員と、その部署を左結合で取得 --
-SELECT employee.name, department.department_name FROM employee LEFT JOIN department ON employee.id = department.id;
+SELECT employee.name, department.department_name FROM employee LEFT JOIN department ON employee.department_id = department.id;
 /*
-+--------+-----------------+
-| name   | department_name |
 +--------+-----------------+
 | 松田   | 経営管理部      |
 | 山田   | 技術部          |
-| 佐藤   | 経営管理部      |
+| 佐藤   | 技術部          |
 | 鈴木   | 技術部          |
-| 佐藤   | 営業部          |
+| 佐藤   | NULL            |
 +--------+-----------------+
 */
 -- 月給が全社員の平均月給より高い社員を取得 --
@@ -71,55 +69,53 @@ SELECT ROW_NUMBER() OVER (ORDER BY sal DESC) AS row_num, employee. * FROM employ
 - 社員山田の月給を50,000減額する。
 - 社員鈴木の月給を50,000増額する。
 */
-START TRANSACTION; UPDATE employee SET sal = sal + 50000 WHERE name = '山田'; UPDATE employee SET sal = sal -50000 WHERE name = '鈴木'; COMMIT;
+START TRANSACTION; UPDATE employee SET sal = sal - 50000 WHERE name = '山田'; UPDATE employee SET sal = sal + 50000 WHERE name = '鈴木'; COMMIT;
 /*
 +----+--------+-----+-----------------+---------+---------------+
-| id | name   | age | job             | sal     | department_id |
-+----+--------+-----+-----------------+---------+---------------+
 |  1 | 松田   |  65 | 社長            | 1000000 |             1 |
-|  2 | 山田   |  43 | 部長            |  730000 |             2 |
+|  2 | 山田   |  43 | 部長            |  630000 |             2 |
 |  4 | 佐藤   |  28 | エンジニア      |  500000 |             2 |
-|  5 | 鈴木   |  35 | エンジニア      |  500000 |             2 |
+|  5 | 鈴木   |  35 | エンジニア      |  600000 |             2 |
 |  6 | 佐藤   |  35 | 営業            |  550000 |          NULL |
 +----+--------+-----+-----------------+---------+---------------+
 */
 -- employeeテーブルのsalが600,000以上なら"高給", それ未満なら"普通"と表示 --
-SELECT *, CASE WHEN sal >=600000 THEN '高級' ELSE '普通' END AS '判定' FROM employee;
+SELECT *, CASE WHEN sal >=600000 THEN '高給' ELSE '普通' END AS '判定' FROM employee;
 /*
 +----+--------+-----+-----------------+---------+---------------+--------+
-| id | name   | age | job             | sal     | department_id | 判定   |
-+----+--------+-----+-----------------+---------+---------------+--------+
-|  1 | 松田   |  65 | 社長            | 1000000 |             1 | 高級   |
-|  2 | 山田   |  43 | 部長            |  730000 |             2 | 高級   |
+|  1 | 松田   |  65 | 社長            | 1000000 |             1 | 高給   |
+|  2 | 山田   |  43 | 部長            |  630000 |             2 | 高給   |
 |  4 | 佐藤   |  28 | エンジニア      |  500000 |             2 | 普通   |
-|  5 | 鈴木   |  35 | エンジニア      |  500000 |             2 | 普通   |
+|  5 | 鈴木   |  35 | エンジニア      |  600000 |             2 | 高給   |
 |  6 | 佐藤   |  35 | 営業            |  550000 |          NULL | 普通   |
 +----+--------+-----+-----------------+---------+---------------+--------+
 */
 --  月給が各部署内で最大の社員を取得 --
-SELECT * FROM employee WHERE sal = (SELECT MAX(sal) FROM employee);
+SELECT * FROM employee AS e WHERE sal = (SELECT MAX(sal) FROM employee WHERE department_id = e.department_id);
 /*
 +----+--------+-----+--------+---------+---------------+
 | id | name   | age | job    | sal     | department_id |
 +----+--------+-----+--------+---------+---------------+
 |  1 | 松田   |  65 | 社長   | 1000000 |             1 |
+|  2 | 山田   |  43 | 部長   |  630000 |             2 |
 +----+--------+-----+--------+---------+---------------+
 */
 -- employeeテーブルとdepartmentテーブルを全結合し、どちらかに存在しないデータをNULLで補完して取得してください。 --
 -- FULL OUTER JOINはMySQLではサポートされていないため、UNIONを使用して実現します。 --
-SELECT * FROM employee LEFT JOIN department ON employee.department_id = department.id UNION SELECT * FROM employee RIGHT JOIN department ON employee.department_id = department.id;
+SELECT * FROM employee 
+LEFT JOIN department ON employee.department_id = department.id 
+UNION 
+SELECT * FROM employee 
+RIGHT JOIN department ON employee.department_id = department.id;
 /*
 +------+--------+------+-----------------+---------+---------------+------+-----------------+
 | id   | name   | age  | job             | sal     | department_id | id   | department_name |
 +------+--------+------+-----------------+---------+---------------+------+-----------------+
 |    1 | 松田   |   65 | 社長            | 1000000 |             1 |    1 | 経営管理部      |
-|    2 | 山田   |   43 | 部長            |  730000 |             2 |    2 | 技術部          |
+|    2 | 山田   |   43 | 部長            |  630000 |             2 |    2 | 技術部          |
 |    4 | 佐藤   |   28 | エンジニア      |  500000 |             2 |    2 | 技術部          |
-|    5 | 鈴木   |   35 | エンジニア      |  500000 |             2 |    2 | 技術部          |
+|    5 | 鈴木   |   35 | エンジニア      |  600000 |             2 |    2 | 技術部          |
 |    6 | 佐藤   |   35 | 営業            |  550000 |          NULL | NULL | NULL            |
 | NULL | NULL   | NULL | NULL            |    NULL |          NULL |    3 | 営業部          |
-| NULL | NULL   | NULL | NULL            |    NULL |          NULL |    4 | 経営管理部      |
-| NULL | NULL   | NULL | NULL            |    NULL |          NULL |    5 | 技術部          |
-| NULL | NULL   | NULL | NULL            |    NULL |          NULL |    6 | 営業部          |
 +------+--------+------+-----------------+---------+---------------+------+-----------------+
 */
