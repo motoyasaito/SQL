@@ -3,8 +3,9 @@ CREATE TABLE users (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(50) NOT NULL,
   email VARCHAR(100) UNIQUE,
-  create_at DATE DEFAULT (CURRENT_DATE),
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP);
+  created_at DATE DEFAULT (CURRENT_DATE),
+  -- DATE型だと日付更新ができないため実装されていません --
+  updated_at DATE DEFAULT (CURRENT_DATE));
   --productsテーブル作成--
 CREATE TABLE products (  
   id INT AUTO_INCREMENT PRIMARY KEY, 
@@ -12,15 +13,19 @@ CREATE TABLE products (
   price INT, 
   stock INT, 
   created_at DATE DEFAULT (CURRENT_DATE), 
-  update_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP);
+  -- DATE型だと日付更新ができないため実装されていません --
+  updated_at DATE DEFAULT (CURRENT_DATE));
   --ordersテーブル作成--
 CREATE TABLE orders (
   id INT AUTO_INCREMENT PRIMARY KEY, 
-  user_id INT, FOREIGN KEY (user_id) REFERENCES users(id), 
-  product_id INT, FOREIGN KEY (product_id) REFERENCES 
+  user_id INT,
+  product_id INT,
   products(id), quantity INT, order_date DATE DEFAULT (CURRENT_DATE), 
   created_at DATE DEFAULT (CURRENT_DATE), 
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP);
+  -- DATE型だと日付更新ができないため実装されていません --
+  updated_at DATE DEFAULT (CURRENT_DATE),
+  FOREIGN KEY (user_id) REFERENCES users(id), 
+  FOREIGN KEY (product_id) REFERENCES products(id),
   --usersテーブルにデータ挿入--
   INSERT INTO users (name, email) VALUES 
   ('田中太郎', 'tanaka@example.com'), 
@@ -47,22 +52,22 @@ CREATE TABLE orders (
 |  3 | 山本次郎     | yamamoto@example.com | 2026-10-06 | 2026-10-06 17:50:23 |
 +----+--------------+----------------------+------------+---------------------+
   */
-  -- 2. 全商品情報を取得する。--
-  SELECT * FROM products;
+  -- 2. すべての商品とその在庫を取得する。--
+  SELECT name, stock FROM products;
   /*
-  +----+-----------------------+--------+-------+------------+---------------------+
-| id | name                  | price  | stock | created_at | update_at           |
-+----+-----------------------+--------+-------+------------+---------------------+
-|  1 | ノートパソコン        | 120000 |    20 | 2026-10-06 | 2026-10-06 17:53:58 |
-|  2 | スマートフォン        |  80000 |    15 | 2026-10-06 | 2026-10-06 17:53:58 |
-|  3 | タブレット            |  60000 |    30 | 2026-10-06 | 2026-10-06 17:53:58 |
-+----+-----------------------+--------+-------+------------+---------------------+
++-----------------------+-------+
+| name                  | stock |
++-----------------------+-------+
+| ノートパソコン        |    20 |
+| スマートフォン        |    15 |
+| タブレット            |    30 |
++-----------------------+-------+
 */
 --3. 注文履歴を`ユーザー名`, `商品名`, `購入数量`の形式で取得する。--
-SELECT users.name, products.name, orders.quantity FROM orders JOIN users ON orders.user_id = users.id JOIN products ON orders.product_id = products.id;
+SELECT users.name AS user_name, products.name AS product_name, orders.quantity FROM orders JOIN users ON orders.user_id = users.id JOIN products ON orders.product_id = products.id;
 /*
 +--------------+-----------------------+----------+
-| name         | name                  | quantity |
+| user_name    | product_name          | quantity |
 +--------------+-----------------------+----------+
 | 田中太郎     | ノートパソコン        |        2 |
 | 佐藤花子     | スマートフォン        |        1 |
@@ -74,6 +79,7 @@ SELECT * FROM products WHERE stock <= 10;
 -- Empty --
 -- 5. 各商品の累計売上を計算して取得する。--
 SELECT products.name, SUM(orders.quantity * products.price) AS total_sales FROM orders JOIN products ON orders.product_id = products.id GROUP BY products.name;
+/*
 +-----------------------+-------------+
 | name                  | total_sales |
 +-----------------------+-------------+
@@ -81,3 +87,4 @@ SELECT products.name, SUM(orders.quantity * products.price) AS total_sales FROM 
 | スマートフォン        |       80000 |
 | タブレット            |      180000 |
 +-----------------------+-------------+
+*/
